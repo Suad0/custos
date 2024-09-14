@@ -1,11 +1,10 @@
 use metal::*;
 
-pub struct MetalDescriptor {
-    // Define any necessary state for resource binding
-}
+pub struct BufferDescriptor;
 
-impl MetalDescriptor {
-    pub fn set_buffer(encoder: &ComputeCommandEncoder, buffer: &Buffer, index: usize) {
-        encoder.set_buffer(index as u64, Some(buffer), 0);
+impl BufferDescriptor {
+    pub fn new(len: usize, options: MTLResourceOptions) -> MTLBuffer {
+        let device = Device::system_default().expect("No Metal device found");
+        device.new_buffer(len as u64, options)
     }
 }

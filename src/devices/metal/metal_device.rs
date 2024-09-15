@@ -1,4 +1,5 @@
 use metal::*;
+use crate::context::MetalContext;
 
 pub struct MetalBuffer {
     pub buffer: Buffer,

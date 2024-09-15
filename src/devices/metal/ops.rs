@@ -1,11 +1,11 @@
-use crate::metal::context::MetalContext;
 use metal::*;
+use crate::context::MetalContext;
 
 pub fn add_arrays(
     ctx: &MetalContext,
-    buffer_a: &MTLBuffer,
-    buffer_b: &MTLBuffer,
-    result_buffer: &MTLBuffer,
+    buffer_a: &Buffer,
+    buffer_b: &Buffer,
+    result_buffer: &Buffer,
     size: usize,
 ) {
     let source = include_str!("shader/add_arrays.metal");
@@ -39,4 +39,60 @@ pub fn add_arrays(
     encoder.end_encoding();
     command_buffer.commit();
     command_buffer.wait_until_completed();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use metal::*;
+    use std::rc::Rc;
+
+    #[test]
+    fn test_add_arrays() {
+        // Initialize Metal context
+        let context = Rc::new(MetalContext::new());
+
+        // Input data
+        let size = 4;
+        let data_a: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0];
+        let data_b: Vec<f32> = vec![5.0, 6.0, 7.0, 8.0];
+        let mut result: Vec<f32> = vec![0.0; size];
+
+        // Create buffers
+        let buffer_a = context.device.new_buffer_with_data(
+            &data_a as *const _ as *const std::ffi::c_void,
+            (size * std::mem::size_of::<f32>()) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
+        let buffer_b = context.device.new_buffer_with_data(
+            &data_b as *const _ as *const std::ffi::c_void,
+            (size * std::mem::size_of::<f32>()) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
+        let result_buffer = context.device.new_buffer(
+            (size * std::mem::size_of::<f32>()) as u64,
+            MTLResourceOptions::StorageModeShared,
+        );
+
+        add_arrays(
+            &context,
+            &buffer_a,
+            &buffer_b,
+            &result_buffer,
+            size,
+        );
+
+        let result_data = result_buffer.contents();
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                result_data as *const f32,
+                result.as_mut_ptr(),
+                size
+            );
+        }
+
+        let expected: Vec<f32> = vec![6.0, 8.0, 10.0, 12.0];
+
+        assert_eq!(result, expected);
+    }
 }

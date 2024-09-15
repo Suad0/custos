@@ -1,11 +1,14 @@
 use metal::*;
-use objc::rc::Rc;
 use std::ops::{Deref, DerefMut};
 use std::ptr::null_mut;
+use std::rc::Rc;
+use crate::alloc_flag::AllocFlag;
+use crate::context::MetalContext;
+use metal::Buffer;
 
 pub struct MetalArray<T> {
     pub len: usize,
-    pub buffer: MTLBuffer,
+    pub buffer: Buffer,
     pub context: Rc<MetalContext>,
     pub mapped_ptr: *mut T,
     pub flag: AllocFlag,
@@ -49,7 +52,7 @@ impl<T> MetalArray<T> {
 
         MetalArray {
             len,
-            buffer,
+            buffer, // Assign the `Buffer` directly
             context,
             mapped_ptr,
             flag,
@@ -127,9 +130,11 @@ impl<T> DerefMut for MetalArray<T> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+    use metal::MTLResourceOptions;
+    use crate::alloc_flag::AllocFlag;
     use super::{MetalArray, MetalContext};
 
     #[test]
@@ -159,4 +164,3 @@ mod tests {
         assert_eq!(output, vec![1.0, 2.0, 3.0, 4.0, 5.0]);
     }
 }
-

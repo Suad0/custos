@@ -1,9 +1,9 @@
+use std::rc::Rc;
 use metal::*;
-use objc::rc::Rc;
 
 pub struct MetalContext {
-    pub device: Rc<MTLDevice>,
-    pub command_queue: MTLCommandQueue,
+    pub device: Rc<Device>,  // Change here to Rc<Device>
+    pub command_queue: CommandQueue,
 }
 
 impl MetalContext {
